@@ -51,7 +51,7 @@ Run the app in development mode with hot reload (Nest CLI/watch):
 yarn start:dev
 ```
 
-By default the server listens on the port from `PORT` or 3000.
+By default the server listens on the port from `PORT` or 8080.
 
 ## Build
 
