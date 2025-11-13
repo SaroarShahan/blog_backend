@@ -4,7 +4,7 @@ A small NestJS-based blog backend providing authentication, post and comment man
 
 ## Tech stack
 
-- Node.js (>= 16)
+- Node.js (>= 22)
 - NestJS
 - TypeScript
 
