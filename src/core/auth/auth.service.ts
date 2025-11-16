@@ -1,0 +1,118 @@
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+
+import { LoginAuthDto } from './dto/login-auth.dto';
+import { UserDto } from 'src/common/dto/user.dto';
+import { UserService } from '../user/user.service';
+import { User } from '../user/schema/user.schema';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  async register(paylod: UserDto): Promise<{
+    message: string;
+    status: boolean;
+    data: User;
+  }> {
+    try {
+      const { username, email, password, ...restPayload } = paylod;
+
+      if (!username || !email || !password) {
+        throw new BadRequestException(
+          'Username, email, and password are required',
+        );
+      }
+
+      const existingUser = await this.userService.findByEmail(email);
+
+      if (existingUser) throw new BadRequestException('User already exists');
+
+      const hashedPassword = await this.userService.hashPassword(password);
+
+      const user = await this.userService.saveUser({
+        ...restPayload,
+        username,
+        email,
+        password: hashedPassword,
+      });
+
+      return {
+        message: 'Registration has been completed successfully!',
+        status: true,
+        data: user,
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'An unknown error occurred',
+      );
+    }
+  }
+
+  async login(paylod: LoginAuthDto) {
+    try {
+      const { email, password } = paylod;
+
+      if (!email || !password) {
+        throw new BadRequestException('Email and password are required');
+      }
+
+      const user = await this.userService.findByEmail(email);
+
+      if (!user) {
+        throw new BadRequestException('Wrong email or password');
+      }
+
+      const isPasswordMatched = await this.userService.comparePassword(
+        password,
+        user.password,
+      );
+
+      if (!isPasswordMatched) {
+        throw new BadRequestException('Wrong email or password');
+      }
+
+      const accessToken = await this.jwtService.signAsync(
+        {
+          id: user._id,
+        },
+        {
+          secret: this.configService.get<string>('HASH_SECRET'),
+          expiresIn: '1h',
+        },
+      );
+
+      const refreshToken = await this.jwtService.signAsync(
+        {
+          id: user._id,
+        },
+        {
+          secret: this.configService.get<string>('HASH_SECRET'),
+          expiresIn: '1h',
+        },
+      );
+
+      return {
+        message: 'Login has been completed successfully!',
+        status: true,
+        data: {
+          accessToken: `Bearer ${accessToken}`,
+          refreshToken: `Bearer ${refreshToken}`,
+        },
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'An unknown error occurred',
+      );
+    }
+  }
+
+  logout() {
+    return `This action handles logout`;
+  }
+}
