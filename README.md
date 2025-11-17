@@ -1,6 +1,6 @@
 # blog_backend
 
-A NestJS-based blog backend providing JWT authentication and user management. This repository contains the API server, configuration, and instructions to run the project locally.
+A NestJS-based blog backend providing JWT authentication, user management, and post management. This repository contains the API server, configuration, and instructions to run the project locally.
 
 ## Tech Stack
 
@@ -23,9 +23,17 @@ A NestJS-based blog backend providing JWT authentication and user management. Th
   - Create, read, update, and delete users
   - Password hashing with bcrypt
   - Protected routes with JWT authentication
+  - Track user's posts via `postsIds` array
+- **Post Management**
+  - Create, read, update, and delete posts
+  - Posts are linked to users via foreign key reference
+  - User's `postsIds` array automatically maintained
+  - Get all posts (public) or individual posts (protected)
+  - Posts include user information via population
 - **API Documentation**
   - Swagger UI available at `/api`
   - Bearer token authentication support
+  - Interactive API testing with parameter inputs
 - **Clean Architecture**
   - Modular structure using NestJS modules
   - Separation of concerns (controllers, services, DTOs, schemas)
@@ -145,6 +153,27 @@ Authorization: Bearer <access_token>
 
 - `DELETE /users/:id/delete` - Delete a user (authenticated)
 
+### Posts
+
+- `POST /posts` - Create a new post (authenticated)
+  - Body: `{ title: string, content: string }`
+  - Automatically associates post with authenticated user
+  - Returns: Created post data
+
+- `GET /posts` - Get all posts (public)
+  - Returns: Array of posts with populated user information
+
+- `GET /posts/:id` - Get a post by ID (authenticated)
+  - Returns: Post data with populated user information
+
+- `PATCH /posts/:id/update` - Update a post (authenticated)
+  - Body: Partial post data `{ title?: string, content?: string }`
+  - Returns: Updated post data
+
+- `DELETE /posts/:id/delete` - Delete a post (authenticated)
+  - Automatically removes post ID from user's `postsIds` array
+  - Returns: Success message
+
 ## Project Structure
 
 ```
@@ -168,6 +197,15 @@ src/
 │       │   └── user.schema.ts # Mongoose user schema
 │       └── dto/
 │           └── update-user.dto.ts
+├── post/
+│   ├── post.controller.ts    # Post CRUD endpoints
+│   ├── post.service.ts       # Post business logic
+│   ├── post.module.ts        # Post module configuration
+│   ├── schema/
+│   │   └── post.schema.ts    # Mongoose post schema
+│   └── dto/
+│       ├── create-post.dto.ts
+│       └── update-post.dto.ts
 └── common/
     └── dto/
         └── user.dto.ts        # Shared user DTO
@@ -192,7 +230,9 @@ src/
    - Refresh token is validated
    - New access and refresh tokens are generated
 
-## User Schema
+## Database Schemas
+
+### User Schema
 
 ```typescript
 {
@@ -202,10 +242,26 @@ src/
   email: string;           // Required, unique
   password: string;        // Required, hashed
   gender?: 'male' | 'female' | 'other';
-  postsIds?: string[];
-  refreshTokens: string[]; // Array of refresh tokens (max 2)
+  postsIds: Types.ObjectId[]; // Array of post IDs (automatically maintained)
+  refreshTokens: string[];     // Array of refresh tokens (max 2)
+  createdAt: Date;            // Auto-generated
+  updatedAt: Date;            // Auto-generated
 }
 ```
+
+### Post Schema
+
+```typescript
+{
+  title: string; // Required
+  content: string; // Required
+  user: Types.ObjectId; // Required, reference to User
+  createdAt: Date; // Auto-generated timestamp
+  updatedAt: Date; // Auto-generated timestamp
+}
+```
+
+**Note:** When a post is created, its ID is automatically added to the user's `postsIds` array. When a post is deleted, its ID is automatically removed from the user's `postsIds` array. This allows you to quickly get a user's total post count via `user.postsIds.length`.
 
 ## API Documentation
 
