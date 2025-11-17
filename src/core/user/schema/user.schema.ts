@@ -26,8 +26,8 @@ export class User {
   @Prop()
   postsIds?: string[];
 
-  @Prop()
-  refreshToken?: string[];
+  @Prop({ default: [] })
+  refreshTokens: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import bcrypt from 'bcrypt';
 
@@ -55,10 +55,26 @@ export class UserService {
     return await bcrypt.compare(password, hashedPassword);
   }
 
+  async saveRefreshToken(id: Types.ObjectId, token: string): Promise<void> {
+    const user = await this.userModel.findById(id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    user.refreshTokens.push(token);
+
+    if (user.refreshTokens.length > 2) {
+      user.refreshTokens.splice(0, 1); // Remove the oldest token
+    }
+
+    await user.save();
+  }
+
   async createUser(payload: UserDto): Promise<{
     message: string;
     status: boolean;
-    data: User;
+    data: UserDocument;
   }> {
     try {
       const { username, email, password, ...restPayload } = payload;
@@ -85,7 +101,7 @@ export class UserService {
       return {
         message: 'User has been created successfully!',
         status: true,
-        data: user,
+        data: user as UserDocument,
       };
     } catch (error) {
       throw new BadRequestException(
@@ -97,7 +113,7 @@ export class UserService {
   async findAllUsers(): Promise<{
     message: string;
     status: boolean;
-    data: User[];
+    data: UserDocument[];
   }> {
     try {
       const users = await this.userModel.find().select('-password');
@@ -114,10 +130,10 @@ export class UserService {
     }
   }
 
-  async findUser(id: string): Promise<{
+  async findUser(id: Types.ObjectId): Promise<{
     message: string;
     status: boolean;
-    data: User | null;
+    data: UserDocument | null;
   }> {
     try {
       const user = await this.userModel.findById(id).select('-password');
@@ -140,7 +156,7 @@ export class UserService {
   ): Promise<{
     message: string;
     status: boolean;
-    data: User | null;
+    data: UserDocument | null;
   }> {
     try {
       const user = await this.userModel

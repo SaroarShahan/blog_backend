@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
+import { Types } from 'mongoose';
 
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -36,7 +37,7 @@ export class UserController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Get(':id')
-  findUser(@Param('id') id: string) {
+  findUser(@Param('id') id: Types.ObjectId) {
     return this.userService.findUser(id);
   }
 
