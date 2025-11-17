@@ -14,7 +14,7 @@ import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from 'src/common/dto/user.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 
 @Controller('users')
 export class UserController {
@@ -30,28 +30,34 @@ export class UserController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Get()
-  findAllUsers() {
-    return this.userService.findAllUsers();
+  getAllUsers() {
+    return this.userService.getAllUsers();
   }
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth('JWT-auth')
+  @ApiParam({ name: 'id', type: String, description: 'User ID' })
   @Get(':id')
-  findUser(@Param('id') id: Types.ObjectId) {
-    return this.userService.findUser(id);
+  getUser(@Param('id') id: Types.ObjectId) {
+    return this.userService.getUser(id);
   }
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth('JWT-auth')
+  @ApiParam({ name: 'id', type: String, description: 'User ID' })
   @Patch(':id/update')
-  updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  updateUser(
+    @Param('id') id: Types.ObjectId,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
     return this.userService.updateUser(id, updateUserDto);
   }
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth('JWT-auth')
+  @ApiParam({ name: 'id', type: String, description: 'User ID' })
   @Delete(':id/delete')
-  removeUser(@Param('id') id: string) {
+  deleteUser(@Param('id') id: Types.ObjectId) {
     return this.userService.deleteUser(id);
   }
 }

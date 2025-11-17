@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { Types } from 'mongoose';
 
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { UserDto } from 'src/common/dto/user.dto';
 import { UserService } from '../user/user.service';
 import { User } from '../user/schema/user.schema';
-import { Types } from 'mongoose';
 
 @Injectable()
 export class AuthService {
@@ -83,7 +83,7 @@ export class AuthService {
           id: user._id,
         },
         {
-          expiresIn: '1m',
+          expiresIn: '1h',
         },
       );
 
@@ -92,7 +92,7 @@ export class AuthService {
           id: user._id,
         },
         {
-          expiresIn: '3m',
+          expiresIn: '1d',
         },
       );
 
@@ -125,7 +125,7 @@ export class AuthService {
         throw new BadRequestException('Invalid refresh token');
       }
 
-      const user = await this.userService.findUser(decoded.id);
+      const user = await this.userService.getUser(decoded.id);
 
       if (!user?.data) {
         throw new BadRequestException('User not found');

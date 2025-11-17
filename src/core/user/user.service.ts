@@ -110,7 +110,7 @@ export class UserService {
     }
   }
 
-  async findAllUsers(): Promise<{
+  async getAllUsers(): Promise<{
     message: string;
     status: boolean;
     data: UserDocument[];
@@ -130,7 +130,7 @@ export class UserService {
     }
   }
 
-  async findUser(id: Types.ObjectId): Promise<{
+  async getUser(id: Types.ObjectId): Promise<{
     message: string;
     status: boolean;
     data: UserDocument | null;
@@ -151,7 +151,7 @@ export class UserService {
   }
 
   async updateUser(
-    id: string,
+    id: Types.ObjectId,
     updateUserDto: UpdateUserDto,
   ): Promise<{
     message: string;
@@ -179,7 +179,7 @@ export class UserService {
     }
   }
 
-  async deleteUser(id: string): Promise<{
+  async deleteUser(id: Types.ObjectId): Promise<{
     message: string;
     status: boolean;
     data: null;
