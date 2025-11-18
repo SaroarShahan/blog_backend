@@ -10,12 +10,16 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostDocument } from './schema/post.schema';
 import { User } from '../core/user/schema/user.schema';
+import { Category } from '../category/schema/category.schema';
+import { Tag } from '../tag/schema/tag.schema';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectModel(Post.name) private postModel: Model<Post>,
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Category.name) private categoryModel: Model<Category>,
+    @InjectModel(Tag.name) private tagModel: Model<Tag>,
   ) {}
 
   async createPost(
@@ -27,23 +31,59 @@ export class PostService {
     data: PostDocument;
   }> {
     try {
-      const { title, content } = createPostDto;
+      const { title, content, categoryId, tagIds } = createPostDto;
 
       if (!title || !content) {
         throw new BadRequestException('Title and content are required');
+      }
+
+      if (categoryId) {
+        const category = await this.categoryModel.findById(categoryId);
+        if (!category) {
+          throw new NotFoundException('Category not found');
+        }
+      }
+
+      if (tagIds && Array.isArray(tagIds) && tagIds.length > 0) {
+        const tagObjectIds = tagIds.map((id) => new Types.ObjectId(id));
+        const tags = await this.tagModel.find({
+          _id: { $in: tagObjectIds },
+        });
+        if (tags.length !== tagIds.length) {
+          throw new NotFoundException('One or more tags not found');
+        }
       }
 
       const post = await this.postModel.create({
         title,
         content,
         user: new Types.ObjectId(userId),
+        category: categoryId ? new Types.ObjectId(categoryId) : undefined,
+        tags:
+          tagIds && Array.isArray(tagIds)
+            ? tagIds.map((id) => new Types.ObjectId(id))
+            : [],
       });
 
-      // Update user's postsIds array
       await this.userModel.updateOne(
         { _id: userId },
-        { $push: { postsIds: post._id } },
+        { $push: { posts: post._id } },
       );
+
+      if (categoryId) {
+        await this.categoryModel.updateOne(
+          { _id: categoryId },
+          { $push: { posts: post._id } },
+        );
+      }
+
+      if (tagIds && Array.isArray(tagIds) && tagIds.length > 0) {
+        const tagObjectIds = tagIds.map((id) => new Types.ObjectId(id));
+        await this.tagModel.updateMany(
+          { _id: { $in: tagObjectIds } },
+          { $push: { posts: post._id } },
+        );
+      }
 
       return {
         message: 'Post has been created successfully!',
@@ -51,6 +91,9 @@ export class PostService {
         data: post,
       };
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       throw new BadRequestException(
         error instanceof Error ? error.message : 'An unknown error occurred',
       );
@@ -65,7 +108,11 @@ export class PostService {
     try {
       const posts = await this.postModel
         .find()
-        .populate('user', 'firstName lastName username email');
+        .populate('user', 'firstName lastName username email')
+        .populate('category', 'name description')
+        .populate('tags', 'name description')
+        .populate('comments', 'content user createdAt')
+        .sort({ createdAt: -1 });
 
       return {
         message: 'Posts have been fetched successfully!',
@@ -87,14 +134,30 @@ export class PostService {
     try {
       const post = await this.postModel
         .findById(id)
-        .populate('user', 'firstName lastName username email');
+        .populate('user', 'firstName lastName username email')
+        .populate('category', 'name description')
+        .populate('tags', 'name description')
+        .populate({
+          path: 'comments',
+          populate: {
+            path: 'user',
+            select: 'firstName lastName username email',
+          },
+        });
+
+      if (!post) {
+        throw new NotFoundException('Post not found');
+      }
 
       return {
         message: 'Post has been fetched successfully!',
         status: true,
-        data: post as PostDocument,
+        data: post,
       };
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       throw new BadRequestException(
         error instanceof Error ? error.message : 'An unknown error occurred',
       );
@@ -110,20 +173,94 @@ export class PostService {
     data: PostDocument;
   }> {
     try {
-      const post = await this.postModel.findByIdAndUpdate(id, updatePostDto, {
-        new: true,
-      });
+      const post = await this.postModel.findById(id);
 
       if (!post) {
+        throw new NotFoundException('Post not found');
+      }
+
+      const { categoryId, tagIds, ...rest } = updatePostDto;
+      const updateData: Record<string, unknown> = { ...rest };
+
+      if (categoryId !== undefined) {
+        if (categoryId) {
+          const category = await this.categoryModel.findById(categoryId);
+          if (!category) {
+            throw new NotFoundException('Category not found');
+          }
+          updateData.category = new Types.ObjectId(categoryId);
+
+          if (post.category) {
+            await this.categoryModel.updateOne(
+              { _id: post.category },
+              { $pull: { posts: post._id } },
+            );
+          }
+
+          await this.categoryModel.updateOne(
+            { _id: categoryId },
+            { $push: { posts: post._id } },
+          );
+        } else {
+          if (post.category) {
+            await this.categoryModel.updateOne(
+              { _id: post.category },
+              { $pull: { posts: post._id } },
+            );
+          }
+          updateData.$unset = { category: '' };
+        }
+      }
+
+      if (tagIds !== undefined) {
+        if (Array.isArray(tagIds) && tagIds.length > 0) {
+          const tagObjectIds = tagIds.map((id) => new Types.ObjectId(id));
+          const tags = await this.tagModel.find({
+            _id: { $in: tagObjectIds },
+          });
+          if (tags.length !== tagIds.length) {
+            throw new NotFoundException('One or more tags not found');
+          }
+        }
+
+        if (post.tags && post.tags.length > 0) {
+          await this.tagModel.updateMany(
+            { _id: { $in: post.tags } },
+            { $pull: { posts: post._id } },
+          );
+        }
+
+        if (Array.isArray(tagIds) && tagIds.length > 0) {
+          updateData.tags = tagIds.map((id) => new Types.ObjectId(id));
+          const tagObjectIds = tagIds.map((id) => new Types.ObjectId(id));
+          await this.tagModel.updateMany(
+            { _id: { $in: tagObjectIds } },
+            { $push: { posts: post._id } },
+          );
+        } else {
+          updateData.tags = [];
+        }
+      }
+
+      const updatedPost = await this.postModel.findByIdAndUpdate(
+        id,
+        updateData,
+        { new: true },
+      );
+
+      if (!updatedPost) {
         throw new NotFoundException('Post not found');
       }
 
       return {
         message: 'Post has been updated successfully!',
         status: true,
-        data: post,
+        data: updatedPost,
       };
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       throw new BadRequestException(
         error instanceof Error ? error.message : 'An unknown error occurred',
       );
@@ -142,14 +279,30 @@ export class PostService {
         throw new NotFoundException('Post not found');
       }
 
-      // Remove post ID from user's postsIds array
-      // Use post._id to ensure exact match with what was stored in postsIds
       await this.userModel.updateOne(
         { _id: post.user },
-        { $pull: { postsIds: post._id } },
+        { $pull: { posts: post._id } },
       );
 
-      // Delete the post
+      if (post.category) {
+        await this.categoryModel.updateOne(
+          { _id: post.category },
+          { $pull: { posts: post._id } },
+        );
+      }
+
+      if (post.tags && post.tags.length > 0) {
+        await this.tagModel.updateMany(
+          { _id: { $in: post.tags } },
+          { $pull: { posts: post._id } },
+        );
+      }
+
+      if (post.comments && post.comments.length > 0) {
+        const commentModel = this.postModel.db.model('Comment');
+        await commentModel.deleteMany({ post: post._id });
+      }
+
       await this.postModel.findByIdAndDelete(id);
 
       return {
@@ -158,6 +311,9 @@ export class PostService {
         data: null,
       };
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       throw new BadRequestException(
         error instanceof Error ? error.message : 'An unknown error occurred',
       );

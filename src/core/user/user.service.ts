@@ -10,10 +10,14 @@ import bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schema/user.schema';
 import { UserDto } from 'src/common/dto/user.dto';
+import { Post, PostDocument } from '../../post/schema/post.schema';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Post.name) private postModel: Model<Post>,
+  ) {}
 
   async findByEmail(email: string): Promise<UserDocument | null> {
     try {
@@ -173,6 +177,47 @@ export class UserService {
         data: user,
       };
     } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'An unknown error occurred',
+      );
+    }
+  }
+
+  async getPostsByUser(id: Types.ObjectId): Promise<{
+    message: string;
+    status: boolean;
+    data: PostDocument[];
+  }> {
+    try {
+      const user = await this.userModel.findById(id);
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const posts = await this.postModel
+        .find({ user: user._id })
+        .populate('user', 'firstName lastName username email')
+        .populate('category', 'name description')
+        .populate('tags', 'name description')
+        .populate({
+          path: 'comments',
+          populate: {
+            path: 'user',
+            select: 'firstName lastName username email',
+          },
+        })
+        .sort({ createdAt: -1 });
+
+      return {
+        message: 'Posts have been fetched successfully!',
+        status: true,
+        data: posts,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       throw new BadRequestException(
         error instanceof Error ? error.message : 'An unknown error occurred',
       );

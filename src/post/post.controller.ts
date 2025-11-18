@@ -16,15 +16,20 @@ import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { AuthGuard } from 'src/core/auth/auth.guard';
-import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
+import { CommentService } from '../comment/comment.service';
 
 interface AuthenticatedRequest extends Request {
   user: { id: string };
 }
 
+@ApiTags('Posts')
 @Controller('posts')
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(
+    private readonly postService: PostService,
+    private readonly commentService: CommentService,
+  ) {}
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth('JWT-auth')
@@ -40,6 +45,16 @@ export class PostController {
   @Get()
   getAllPosts() {
     return this.postService.getAllPosts();
+  }
+
+  @ApiParam({ name: 'id', type: String, description: 'Post ID' })
+  @Get(':id/comments')
+  getCommentsByPost(@Param('id') id: string): Promise<{
+    message: string;
+    status: boolean;
+    data: any[];
+  }> {
+    return this.commentService.getCommentsByPost(new Types.ObjectId(id));
   }
 
   @UseGuards(AuthGuard)

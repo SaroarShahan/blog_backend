@@ -23,8 +23,11 @@ export class User {
   @Prop({ enum: ['male', 'female', 'other'] })
   gender?: string;
 
-  @Prop({ type: [Types.ObjectId], default: [] })
-  postsIds: Types.ObjectId[];
+  @Prop({ type: [Types.ObjectId], ref: 'Post' })
+  posts: Types.ObjectId[];
+
+  @Prop({ type: [Types.ObjectId], ref: 'Comment', default: [] })
+  comments: Types.ObjectId[];
 
   @Prop({ default: [] })
   refreshTokens: string[];

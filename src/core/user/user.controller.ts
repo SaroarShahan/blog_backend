@@ -14,8 +14,9 @@ import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from 'src/common/dto/user.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Users')
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -32,6 +33,12 @@ export class UserController {
   @Get()
   getAllUsers() {
     return this.userService.getAllUsers();
+  }
+
+  @ApiParam({ name: 'id', type: String, description: 'User ID' })
+  @Get(':id/posts')
+  getPostsByUser(@Param('id') id: Types.ObjectId) {
+    return this.userService.getPostsByUser(id);
   }
 
   @UseGuards(AuthGuard)
