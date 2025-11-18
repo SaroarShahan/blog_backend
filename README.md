@@ -1,6 +1,6 @@
 # blog_backend
 
-A NestJS-based blog backend providing JWT authentication, user management, and post management. This repository contains the API server, configuration, and instructions to run the project locally.
+A NestJS-based blog backend providing JWT authentication, user management, post management, categories, tags, and comments. This repository contains the API server, configuration, and instructions to run the project locally.
 
 ## Tech Stack
 
@@ -23,13 +23,34 @@ A NestJS-based blog backend providing JWT authentication, user management, and p
   - Create, read, update, and delete users
   - Password hashing with bcrypt
   - Protected routes with JWT authentication
-  - Track user's posts via `postsIds` array
+  - Track user's posts and comments via arrays
+  - Get all posts by a specific user
 - **Post Management**
   - Create, read, update, and delete posts
   - Posts are linked to users via foreign key reference
-  - User's `postsIds` array automatically maintained
+  - Posts can be associated with categories and tags
+  - User's `posts` array automatically maintained
   - Get all posts (public) or individual posts (protected)
-  - Posts include user information via population
+  - Posts include user, category, tags, and comments information via population
+  - Get all comments for a specific post
+- **Category Management**
+  - Create, read, update, and delete categories
+  - Categories have unique names
+  - Get all posts under a specific category
+  - Category's `posts` array automatically maintained
+- **Tag Management**
+  - Create, read, update, and delete tags
+  - Tags have unique names
+  - Posts can have multiple tags
+  - Get all posts under a specific tag
+  - Tag's `posts` array automatically maintained
+- **Comment Management**
+  - Create, read, update, and delete comments
+  - Comments are linked to posts and users
+  - Support for nested comments (replies)
+  - Get all comments for a post
+  - Comment's `replies` array automatically maintained
+  - User's `comments` array automatically maintained
 - **API Documentation**
   - Swagger UI available at `/api`
   - Bearer token authentication support
@@ -148,6 +169,9 @@ Authorization: Bearer <access_token>
 - `GET /users/:id` - Get a user by ID (authenticated)
   - Returns: User data (password excluded)
 
+- `GET /users/:id/posts` - Get all posts by a user (public)
+  - Returns: Array of posts with populated user, category, tags, and comments
+
 - `PATCH /users/:id/update` - Update a user (authenticated)
   - Body: Partial user data
 
@@ -156,22 +180,100 @@ Authorization: Bearer <access_token>
 ### Posts
 
 - `POST /posts` - Create a new post (authenticated)
-  - Body: `{ title: string, content: string }`
+  - Body: `{ title: string, content: string, categoryId?: string, tagIds?: string[] }`
   - Automatically associates post with authenticated user
-  - Returns: Created post data
+  - Returns: Created post data with populated user, category, and tags
 
 - `GET /posts` - Get all posts (public)
-  - Returns: Array of posts with populated user information
+  - Returns: Array of posts with populated user, category, tags, and comments information
 
 - `GET /posts/:id` - Get a post by ID (authenticated)
-  - Returns: Post data with populated user information
+  - Returns: Post data with populated user, category, tags, and comments information
+
+- `GET /posts/:id/comments` - Get all comments for a post (public)
+  - Returns: Array of top-level comments with nested replies
 
 - `PATCH /posts/:id/update` - Update a post (authenticated)
-  - Body: Partial post data `{ title?: string, content?: string }`
+  - Body: Partial post data `{ title?: string, content?: string, categoryId?: string, tagIds?: string[] }`
   - Returns: Updated post data
 
 - `DELETE /posts/:id/delete` - Delete a post (authenticated)
-  - Automatically removes post ID from user's `postsIds` array
+  - Automatically removes post ID from user's `posts` array
+  - Removes post from category's `posts` array
+  - Removes post from tags' `posts` arrays
+  - Deletes all associated comments
+  - Returns: Success message
+
+### Categories
+
+- `POST /categories` - Create a new category (authenticated)
+  - Body: `{ name: string, description?: string }`
+  - Returns: Created category data
+
+- `GET /categories` - Get all categories (public)
+  - Returns: Array of categories
+
+- `GET /categories/:id` - Get a category by ID (public)
+  - Returns: Category data
+
+- `GET /categories/:id/posts` - Get all posts under a category (public)
+  - Returns: Array of posts with populated user, category, tags, and comments
+
+- `PATCH /categories/:id/update` - Update a category (authenticated)
+  - Body: Partial category data `{ name?: string, description?: string }`
+  - Returns: Updated category data
+
+- `DELETE /categories/:id/delete` - Delete a category (authenticated)
+  - Automatically removes category reference from all associated posts
+  - Returns: Success message
+
+### Tags
+
+- `POST /tags` - Create a new tag (authenticated)
+  - Body: `{ name: string, description?: string }`
+  - Returns: Created tag data
+
+- `GET /tags` - Get all tags (public)
+  - Returns: Array of tags
+
+- `GET /tags/:id` - Get a tag by ID (public)
+  - Returns: Tag data
+
+- `GET /tags/:id/posts` - Get all posts under a tag (public)
+  - Returns: Array of posts with populated user, category, tags, and comments
+
+- `PATCH /tags/:id/update` - Update a tag (authenticated)
+  - Body: Partial tag data `{ name?: string, description?: string }`
+  - Returns: Updated tag data
+
+- `DELETE /tags/:id/delete` - Delete a tag (authenticated)
+  - Automatically removes tag reference from all associated posts
+  - Returns: Success message
+
+### Comments
+
+- `POST /comments` - Create a new comment (authenticated)
+  - Body: `{ content: string, postId: string, parentCommentId?: string }`
+  - Automatically associates comment with authenticated user
+  - Supports nested comments (replies) via `parentCommentId`
+  - Returns: Created comment data
+
+- `GET /comments` - Get all comments (public)
+  - Query params: `?postId={postId}` - Filter comments by post
+  - Returns: Array of comments with populated user, post, parentComment, and replies
+
+- `GET /comments/:id` - Get a comment by ID (public)
+  - Returns: Comment data with populated user, post, parentComment, and replies
+
+- `PATCH /comments/:id/update` - Update a comment (authenticated)
+  - Body: Partial comment data `{ content?: string, postId?: string, parentCommentId?: string | null }`
+  - Returns: Updated comment data
+
+- `DELETE /comments/:id/delete` - Delete a comment (authenticated)
+  - Automatically removes comment from post's `comments` array
+  - Removes comment from user's `comments` array
+  - Removes comment from parent comment's `replies` array (if applicable)
+  - Deletes all nested replies
   - Returns: Success message
 
 ## Project Structure
@@ -206,6 +308,33 @@ src/
 │   └── dto/
 │       ├── create-post.dto.ts
 │       └── update-post.dto.ts
+├── category/
+│   ├── category.controller.ts # Category CRUD endpoints
+│   ├── category.service.ts    # Category business logic
+│   ├── category.module.ts     # Category module configuration
+│   ├── schema/
+│   │   └── category.schema.ts # Mongoose category schema
+│   └── dto/
+│       ├── create-category.dto.ts
+│       └── update-category.dto.ts
+├── tag/
+│   ├── tag.controller.ts      # Tag CRUD endpoints
+│   ├── tag.service.ts         # Tag business logic
+│   ├── tag.module.ts          # Tag module configuration
+│   ├── schema/
+│   │   └── tag.schema.ts      # Mongoose tag schema
+│   └── dto/
+│       ├── create-tag.dto.ts
+│       └── update-tag.dto.ts
+├── comment/
+│   ├── comment.controller.ts  # Comment CRUD endpoints
+│   ├── comment.service.ts     # Comment business logic
+│   ├── comment.module.ts      # Comment module configuration
+│   ├── schema/
+│   │   └── comment.schema.ts  # Mongoose comment schema
+│   └── dto/
+│       ├── create-comment.dto.ts
+│       └── update-comment.dto.ts
 └── common/
     └── dto/
         └── user.dto.ts        # Shared user DTO
@@ -242,10 +371,11 @@ src/
   email: string;           // Required, unique
   password: string;        // Required, hashed
   gender?: 'male' | 'female' | 'other';
-  postsIds: Types.ObjectId[]; // Array of post IDs (automatically maintained)
-  refreshTokens: string[];     // Array of refresh tokens (max 2)
-  createdAt: Date;            // Auto-generated
-  updatedAt: Date;            // Auto-generated
+  posts: Types.ObjectId[];     // Array of post IDs (automatically maintained)
+  comments: Types.ObjectId[];  // Array of comment IDs (automatically maintained)
+  refreshTokens: string[];      // Array of refresh tokens (max 2)
+  createdAt: Date;             // Auto-generated
+  updatedAt: Date;             // Auto-generated
 }
 ```
 
@@ -253,15 +383,62 @@ src/
 
 ```typescript
 {
-  title: string; // Required
-  content: string; // Required
-  user: Types.ObjectId; // Required, reference to User
-  createdAt: Date; // Auto-generated timestamp
-  updatedAt: Date; // Auto-generated timestamp
+  title: string;                    // Required
+  content: string;                   // Required
+  user: Types.ObjectId;              // Required, reference to User
+  category?: Types.ObjectId;         // Optional, reference to Category
+  tags: Types.ObjectId[];            // Array of tag references
+  comments: Types.ObjectId[];       // Array of comment references
+  createdAt: Date;                   // Auto-generated timestamp
+  updatedAt: Date;                   // Auto-generated timestamp
 }
 ```
 
-**Note:** When a post is created, its ID is automatically added to the user's `postsIds` array. When a post is deleted, its ID is automatically removed from the user's `postsIds` array. This allows you to quickly get a user's total post count via `user.postsIds.length`.
+**Note:** When a post is created, its ID is automatically added to the user's `posts` array. When a post is deleted, its ID is automatically removed from the user's `posts` array, category's `posts` array, and all tags' `posts` arrays. Associated comments are also deleted.
+
+### Category Schema
+
+```typescript
+{
+  name: string;                // Required, unique
+  description?: string;
+  posts: Types.ObjectId[];     // Array of post IDs (automatically maintained)
+  createdAt: Date;             // Auto-generated timestamp
+  updatedAt: Date;             // Auto-generated timestamp
+}
+```
+
+**Note:** When a post is assigned to a category, the post ID is automatically added to the category's `posts` array. When a category is deleted, all associated posts have their category reference removed.
+
+### Tag Schema
+
+```typescript
+{
+  name: string;                // Required, unique
+  description?: string;
+  posts: Types.ObjectId[];     // Array of post IDs (automatically maintained)
+  createdAt: Date;             // Auto-generated timestamp
+  updatedAt: Date;             // Auto-generated timestamp
+}
+```
+
+**Note:** When a post is assigned tags, the post ID is automatically added to each tag's `posts` array. When a tag is deleted, all associated posts have the tag reference removed from their `tags` array.
+
+### Comment Schema
+
+```typescript
+{
+  content: string;                    // Required
+  user: Types.ObjectId;               // Required, reference to User
+  post: Types.ObjectId;               // Required, reference to Post
+  parentComment?: Types.ObjectId;     // Optional, reference to parent Comment (for replies)
+  replies: Types.ObjectId[];          // Array of reply comment IDs (automatically maintained)
+  createdAt: Date;                    // Auto-generated timestamp
+  updatedAt: Date;                    // Auto-generated timestamp
+}
+```
+
+**Note:** When a comment is created, its ID is automatically added to the post's `comments` array and the user's `comments` array. If it's a reply, it's also added to the parent comment's `replies` array. When a comment is deleted, it's removed from all these arrays, and all nested replies are also deleted.
 
 ## API Documentation
 
