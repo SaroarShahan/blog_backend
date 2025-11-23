@@ -5,7 +5,7 @@ import { CommentService } from './comment.service';
 import { CommentController } from './comment.controller';
 import { Comment, CommentSchema } from './schema/comment.schema';
 import { Post, PostSchema } from '../post/schema/post.schema';
-import { User, UserSchema } from '../core/user/schema/user.schema';
+import { User, UserSchema } from '../../core/user/schema/user.schema';
 
 @Module({
   imports: [
@@ -20,4 +20,3 @@ import { User, UserSchema } from '../core/user/schema/user.schema';
   providers: [CommentService],
 })
 export class CommentModule {}
-

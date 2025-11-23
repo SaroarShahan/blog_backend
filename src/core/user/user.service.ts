@@ -3,14 +3,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import bcrypt from 'bcrypt';
 
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schema/user.schema';
 import { UserDto } from 'src/common/dto/user.dto';
-import { Post, PostDocument } from '../../post/schema/post.schema';
+import { Post, PostDocument } from '../../features/post/schema/post.schema';
+import { ParamsDto } from 'src/common/dto/params.dto';
 
 @Injectable()
 export class UserService {
@@ -59,7 +60,7 @@ export class UserService {
     return await bcrypt.compare(password, hashedPassword);
   }
 
-  async saveRefreshToken(id: Types.ObjectId, token: string): Promise<void> {
+  async saveRefreshToken(id: ParamsDto['id'], token: string): Promise<void> {
     const user = await this.userModel.findById(id);
 
     if (!user) {
@@ -134,7 +135,7 @@ export class UserService {
     }
   }
 
-  async getUser(id: Types.ObjectId): Promise<{
+  async getUser(id: ParamsDto['id']): Promise<{
     message: string;
     status: boolean;
     data: UserDocument | null;
@@ -155,7 +156,7 @@ export class UserService {
   }
 
   async updateUser(
-    id: Types.ObjectId,
+    id: ParamsDto['id'],
     updateUserDto: UpdateUserDto,
   ): Promise<{
     message: string;
@@ -183,7 +184,7 @@ export class UserService {
     }
   }
 
-  async getPostsByUser(id: Types.ObjectId): Promise<{
+  async getPostsByUser(id: ParamsDto['id']): Promise<{
     message: string;
     status: boolean;
     data: PostDocument[];
@@ -224,7 +225,7 @@ export class UserService {
     }
   }
 
-  async deleteUser(id: Types.ObjectId): Promise<{
+  async deleteUser(id: ParamsDto['id']): Promise<{
     message: string;
     status: boolean;
     data: null;

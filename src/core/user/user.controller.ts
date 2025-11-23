@@ -8,13 +8,13 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
-import { Types } from 'mongoose';
 
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from 'src/common/dto/user.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ParamsDto } from 'src/common/dto/params.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -37,7 +37,7 @@ export class UserController {
 
   @ApiParam({ name: 'id', type: String, description: 'User ID' })
   @Get(':id/posts')
-  getPostsByUser(@Param('id') id: Types.ObjectId) {
+  getPostsByUser(@Param('id') id: ParamsDto['id']) {
     return this.userService.getPostsByUser(id);
   }
 
@@ -45,7 +45,7 @@ export class UserController {
   @ApiBearerAuth('JWT-auth')
   @ApiParam({ name: 'id', type: String, description: 'User ID' })
   @Get(':id')
-  getUser(@Param('id') id: Types.ObjectId) {
+  getUser(@Param('id') id: ParamsDto['id']) {
     return this.userService.getUser(id);
   }
 
@@ -54,7 +54,7 @@ export class UserController {
   @ApiParam({ name: 'id', type: String, description: 'User ID' })
   @Patch(':id/update')
   updateUser(
-    @Param('id') id: Types.ObjectId,
+    @Param('id') id: ParamsDto['id'],
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.userService.updateUser(id, updateUserDto);
@@ -64,7 +64,7 @@ export class UserController {
   @ApiBearerAuth('JWT-auth')
   @ApiParam({ name: 'id', type: String, description: 'User ID' })
   @Delete(':id/delete')
-  deleteUser(@Param('id') id: Types.ObjectId) {
+  deleteUser(@Param('id') id: ParamsDto['id']) {
     return this.userService.deleteUser(id);
   }
 }

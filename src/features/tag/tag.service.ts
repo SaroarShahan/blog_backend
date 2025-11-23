@@ -3,13 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { Tag, TagDocument } from './schema/tag.schema';
 import { Post, PostDocument } from '../post/schema/post.schema';
+import { ParamsDto } from 'src/common/dto/params.dto';
 
 @Injectable()
 export class TagService {
@@ -75,7 +76,7 @@ export class TagService {
     }
   }
 
-  async getTag(id: Types.ObjectId): Promise<{
+  async getTag(id: ParamsDto['id']): Promise<{
     message: string;
     status: boolean;
     data: TagDocument;
@@ -105,7 +106,7 @@ export class TagService {
   }
 
   async updateTag(
-    id: Types.ObjectId,
+    id: ParamsDto['id'],
     updateTagDto: UpdateTagDto,
   ): Promise<{
     message: string;
@@ -144,7 +145,7 @@ export class TagService {
     }
   }
 
-  async getPostsByTag(id: Types.ObjectId): Promise<{
+  async getPostsByTag(id: ParamsDto['id']): Promise<{
     message: string;
     status: boolean;
     data: PostDocument[];
@@ -184,7 +185,7 @@ export class TagService {
     }
   }
 
-  async deleteTag(id: Types.ObjectId): Promise<{
+  async deleteTag(id: ParamsDto['id']): Promise<{
     message: string;
     status: boolean;
     data: null;

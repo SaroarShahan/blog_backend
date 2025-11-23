@@ -3,15 +3,16 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostDocument } from './schema/post.schema';
-import { User } from '../core/user/schema/user.schema';
+import { User } from '../../core/user/schema/user.schema';
 import { Category } from '../category/schema/category.schema';
 import { Tag } from '../tag/schema/tag.schema';
+import { ParamsDto } from 'src/common/dto/params.dto';
 
 @Injectable()
 export class PostService {
@@ -45,7 +46,7 @@ export class PostService {
       }
 
       if (tagIds && Array.isArray(tagIds) && tagIds.length > 0) {
-        const tagObjectIds = tagIds.map((id) => new Types.ObjectId(id));
+        const tagObjectIds = tagIds.map((id) => id);
         const tags = await this.tagModel.find({
           _id: { $in: tagObjectIds },
         });
@@ -57,12 +58,9 @@ export class PostService {
       const post = await this.postModel.create({
         title,
         content,
-        user: new Types.ObjectId(userId),
-        category: categoryId ? new Types.ObjectId(categoryId) : undefined,
-        tags:
-          tagIds && Array.isArray(tagIds)
-            ? tagIds.map((id) => new Types.ObjectId(id))
-            : [],
+        user: userId,
+        category: categoryId ? categoryId : undefined,
+        tags: tagIds && Array.isArray(tagIds) ? tagIds.map((id) => id) : [],
       });
 
       await this.userModel.updateOne(
@@ -78,7 +76,7 @@ export class PostService {
       }
 
       if (tagIds && Array.isArray(tagIds) && tagIds.length > 0) {
-        const tagObjectIds = tagIds.map((id) => new Types.ObjectId(id));
+        const tagObjectIds = tagIds.map((id) => id);
         await this.tagModel.updateMany(
           { _id: { $in: tagObjectIds } },
           { $push: { posts: post._id } },
@@ -126,7 +124,7 @@ export class PostService {
     }
   }
 
-  async getPost(id: Types.ObjectId): Promise<{
+  async getPost(id: ParamsDto['id']): Promise<{
     message: string;
     status: boolean;
     data: PostDocument;
@@ -165,7 +163,7 @@ export class PostService {
   }
 
   async updatePost(
-    id: Types.ObjectId,
+    id: ParamsDto['id'],
     updatePostDto: UpdatePostDto,
   ): Promise<{
     message: string;
@@ -182,13 +180,13 @@ export class PostService {
       const { categoryId, tagIds, ...rest } = updatePostDto;
       const updateData: Record<string, unknown> = { ...rest };
 
-      if (categoryId !== undefined) {
+      if (typeof categoryId !== 'undefined') {
         if (categoryId) {
           const category = await this.categoryModel.findById(categoryId);
           if (!category) {
             throw new NotFoundException('Category not found');
           }
-          updateData.category = new Types.ObjectId(categoryId);
+          updateData.category = categoryId;
 
           if (post.category) {
             await this.categoryModel.updateOne(
@@ -212,12 +210,13 @@ export class PostService {
         }
       }
 
-      if (tagIds !== undefined) {
+      if (typeof tagIds !== 'undefined') {
         if (Array.isArray(tagIds) && tagIds.length > 0) {
-          const tagObjectIds = tagIds.map((id) => new Types.ObjectId(id));
+          const tagObjectIds = tagIds.map((id) => id);
           const tags = await this.tagModel.find({
             _id: { $in: tagObjectIds },
           });
+
           if (tags.length !== tagIds.length) {
             throw new NotFoundException('One or more tags not found');
           }
@@ -231,8 +230,8 @@ export class PostService {
         }
 
         if (Array.isArray(tagIds) && tagIds.length > 0) {
-          updateData.tags = tagIds.map((id) => new Types.ObjectId(id));
-          const tagObjectIds = tagIds.map((id) => new Types.ObjectId(id));
+          updateData.tags = tagIds.map((id) => id);
+          const tagObjectIds = tagIds.map((id) => id);
           await this.tagModel.updateMany(
             { _id: { $in: tagObjectIds } },
             { $push: { posts: post._id } },
@@ -267,7 +266,7 @@ export class PostService {
     }
   }
 
-  async deletePost(id: Types.ObjectId): Promise<{
+  async deletePost(id: ParamsDto['id']): Promise<{
     message: string;
     status: boolean;
     data: null;

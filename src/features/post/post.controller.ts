@@ -9,7 +9,6 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
-import { Types } from 'mongoose';
 import type { Request } from 'express';
 
 import { PostService } from './post.service';
@@ -17,6 +16,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { AuthGuard } from 'src/core/auth/auth.guard';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ParamsDto } from 'src/common/dto/params.dto';
 import { CommentService } from '../comment/comment.service';
 
 interface AuthenticatedRequest extends Request {
@@ -49,19 +49,19 @@ export class PostController {
 
   @ApiParam({ name: 'id', type: String, description: 'Post ID' })
   @Get(':id/comments')
-  getCommentsByPost(@Param('id') id: string): Promise<{
+  getCommentsByPost(@Param('id') id: ParamsDto['id']): Promise<{
     message: string;
     status: boolean;
     data: any[];
   }> {
-    return this.commentService.getCommentsByPost(new Types.ObjectId(id));
+    return this.commentService.getCommentsByPost(id);
   }
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiParam({ name: 'id', type: String, description: 'Post ID' })
   @Get(':id')
-  getPost(@Param('id') id: Types.ObjectId) {
+  getPost(@Param('id') id: ParamsDto['id']) {
     return this.postService.getPost(id);
   }
 
@@ -70,7 +70,7 @@ export class PostController {
   @ApiParam({ name: 'id', type: String, description: 'Post ID' })
   @Patch(':id/update')
   updatePost(
-    @Param('id') id: Types.ObjectId,
+    @Param('id') id: ParamsDto['id'],
     @Body() updatePostDto: UpdatePostDto,
   ) {
     return this.postService.updatePost(id, updatePostDto);
@@ -80,7 +80,7 @@ export class PostController {
   @ApiBearerAuth('JWT-auth')
   @ApiParam({ name: 'id', type: String, description: 'Post ID' })
   @Delete(':id/delete')
-  deletePost(@Param('id') id: Types.ObjectId) {
+  deletePost(@Param('id') id: ParamsDto['id']) {
     return this.postService.deletePost(id);
   }
 }
