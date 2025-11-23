@@ -51,7 +51,7 @@ export class PostController {
   @Get(':id/comments')
   getCommentsByPost(@Param('id') id: ParamsDto['id']): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: any[];
   }> {
     return this.commentService.getCommentsByPost(id);

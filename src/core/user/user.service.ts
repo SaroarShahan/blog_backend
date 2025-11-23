@@ -78,7 +78,7 @@ export class UserService {
 
   async createUser(payload: UserDto): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: UserDocument;
   }> {
     try {
@@ -105,7 +105,7 @@ export class UserService {
 
       return {
         message: 'User has been created successfully!',
-        status: true,
+        success: true,
         data: user as UserDocument,
       };
     } catch (error) {
@@ -117,7 +117,7 @@ export class UserService {
 
   async getAllUsers(): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: UserDocument[];
   }> {
     try {
@@ -125,7 +125,7 @@ export class UserService {
 
       return {
         message: 'Users have been fetched successfully!',
-        status: true,
+        success: true,
         data: users,
       };
     } catch (error) {
@@ -137,7 +137,7 @@ export class UserService {
 
   async getUser(id: ParamsDto['id']): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: UserDocument | null;
   }> {
     try {
@@ -145,7 +145,7 @@ export class UserService {
 
       return {
         message: 'User has been fetched successfully!',
-        status: true,
+        success: true,
         data: user,
       };
     } catch (error) {
@@ -160,7 +160,7 @@ export class UserService {
     updateUserDto: UpdateUserDto,
   ): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: UserDocument | null;
   }> {
     try {
@@ -174,7 +174,7 @@ export class UserService {
 
       return {
         message: 'User has been updated successfully!',
-        status: true,
+        success: true,
         data: user,
       };
     } catch (error) {
@@ -186,7 +186,7 @@ export class UserService {
 
   async getPostsByUser(id: ParamsDto['id']): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: PostDocument[];
   }> {
     try {
@@ -212,7 +212,7 @@ export class UserService {
 
       return {
         message: 'Posts have been fetched successfully!',
-        status: true,
+        success: true,
         data: posts,
       };
     } catch (error) {
@@ -227,7 +227,7 @@ export class UserService {
 
   async deleteUser(id: ParamsDto['id']): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: null;
   }> {
     try {
@@ -239,7 +239,7 @@ export class UserService {
 
       return {
         message: 'User has been deleted successfully!',
-        status: true,
+        success: true,
         data: null,
       };
     } catch (error) {

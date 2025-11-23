@@ -18,7 +18,7 @@ export class AuthService {
 
   async register(paylod: UserDto): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: User;
   }> {
     try {
@@ -45,7 +45,7 @@ export class AuthService {
 
       return {
         message: 'Registration has been completed successfully!',
-        status: true,
+        success: true,
         data: user,
       };
     } catch (error) {
@@ -100,7 +100,7 @@ export class AuthService {
 
       return {
         message: 'Login has been completed successfully!',
-        status: true,
+        success: true,
         data: {
           accessToken: `Bearer ${accessToken}`,
           refreshToken: `Bearer ${refreshToken}`,
@@ -160,7 +160,7 @@ export class AuthService {
 
       return {
         message: 'Refresh token has been generated successfully!',
-        status: true,
+        success: true,
         data: {
           accessToken: `Bearer ${accessToken}`,
           refreshToken: `Bearer ${newRefreshToken}`,

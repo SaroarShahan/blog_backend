@@ -20,7 +20,7 @@ export class CategoryService {
 
   async createCategory(createCategoryDto: CreateCategoryDto): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: CategoryDocument;
   }> {
     try {
@@ -37,7 +37,7 @@ export class CategoryService {
 
       return {
         message: 'Category has been created successfully!',
-        status: true,
+        success: true,
         data: category,
       };
     } catch (error) {
@@ -57,7 +57,7 @@ export class CategoryService {
 
   async getAllCategories(): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: CategoryDocument[];
   }> {
     try {
@@ -65,7 +65,7 @@ export class CategoryService {
 
       return {
         message: 'Categories have been fetched successfully!',
-        status: true,
+        success: true,
         data: categories,
       };
     } catch (error) {
@@ -77,7 +77,7 @@ export class CategoryService {
 
   async getCategory(id: Types.ObjectId): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: CategoryDocument;
   }> {
     try {
@@ -91,7 +91,7 @@ export class CategoryService {
 
       return {
         message: 'Category has been fetched successfully!',
-        status: true,
+        success: true,
         data: category,
       };
     } catch (error) {
@@ -109,7 +109,7 @@ export class CategoryService {
     updateCategoryDto: UpdateCategoryDto,
   ): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: CategoryDocument;
   }> {
     try {
@@ -125,7 +125,7 @@ export class CategoryService {
 
       return {
         message: 'Category has been updated successfully!',
-        status: true,
+        success: true,
         data: category,
       };
     } catch (error) {
@@ -148,7 +148,7 @@ export class CategoryService {
 
   async getPostsByCategory(id: Types.ObjectId): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: PostDocument[];
   }> {
     try {
@@ -163,7 +163,7 @@ export class CategoryService {
 
       return {
         message: 'Posts have been fetched successfully!',
-        status: true,
+        success: true,
         data: posts,
       };
     } catch (error) {
@@ -178,7 +178,7 @@ export class CategoryService {
 
   async deleteCategory(id: Types.ObjectId): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: null;
   }> {
     try {
@@ -197,7 +197,7 @@ export class CategoryService {
 
       return {
         message: 'Category has been deleted successfully!',
-        status: true,
+        success: true,
         data: null,
       };
     } catch (error) {

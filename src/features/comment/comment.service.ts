@@ -25,7 +25,7 @@ export class CommentService {
     userId: string,
   ): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: CommentDocument;
   }> {
     try {
@@ -75,7 +75,7 @@ export class CommentService {
 
       return {
         message: 'Comment has been created successfully!',
-        status: true,
+        success: true,
         data: comment,
       };
     } catch (error) {
@@ -90,7 +90,7 @@ export class CommentService {
 
   async getAllComments(): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: CommentDocument[];
   }> {
     try {
@@ -104,7 +104,7 @@ export class CommentService {
 
       return {
         message: 'Comments have been fetched successfully!',
-        status: true,
+        success: true,
         data: comments,
       };
     } catch (error) {
@@ -116,7 +116,7 @@ export class CommentService {
 
   async getComment(id: Types.ObjectId): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: CommentDocument;
   }> {
     try {
@@ -133,7 +133,7 @@ export class CommentService {
 
       return {
         message: 'Comment has been fetched successfully!',
-        status: true,
+        success: true,
         data: comment,
       };
     } catch (error) {
@@ -148,7 +148,7 @@ export class CommentService {
 
   async getCommentsByPost(postId: Types.ObjectId): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: CommentDocument[];
   }> {
     try {
@@ -172,7 +172,7 @@ export class CommentService {
 
       return {
         message: 'Comments have been fetched successfully!',
-        status: true,
+        success: true,
         data: comments,
       };
     } catch (error) {
@@ -190,7 +190,7 @@ export class CommentService {
     updateCommentDto: UpdateCommentDto,
   ): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: CommentDocument;
   }> {
     try {
@@ -240,7 +240,7 @@ export class CommentService {
 
       return {
         message: 'Comment has been updated successfully!',
-        status: true,
+        success: true,
         data: updatedComment,
       };
     } catch (error) {
@@ -255,7 +255,7 @@ export class CommentService {
 
   async deleteComment(id: Types.ObjectId): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: null;
   }> {
     try {
@@ -292,7 +292,7 @@ export class CommentService {
 
       return {
         message: 'Comment has been deleted successfully!',
-        status: true,
+        success: true,
         data: null,
       };
     } catch (error) {

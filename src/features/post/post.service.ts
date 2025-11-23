@@ -28,7 +28,7 @@ export class PostService {
     userId: string,
   ): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: PostDocument;
   }> {
     try {
@@ -85,7 +85,7 @@ export class PostService {
 
       return {
         message: 'Post has been created successfully!',
-        status: true,
+        success: true,
         data: post,
       };
     } catch (error) {
@@ -100,7 +100,7 @@ export class PostService {
 
   async getAllPosts(): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: PostDocument[];
   }> {
     try {
@@ -114,7 +114,7 @@ export class PostService {
 
       return {
         message: 'Posts have been fetched successfully!',
-        status: true,
+        success: true,
         data: posts,
       };
     } catch (error) {
@@ -126,7 +126,7 @@ export class PostService {
 
   async getPost(id: ParamsDto['id']): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: PostDocument;
   }> {
     try {
@@ -149,7 +149,7 @@ export class PostService {
 
       return {
         message: 'Post has been fetched successfully!',
-        status: true,
+        success: true,
         data: post,
       };
     } catch (error) {
@@ -167,7 +167,7 @@ export class PostService {
     updatePostDto: UpdatePostDto,
   ): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: PostDocument;
   }> {
     try {
@@ -253,7 +253,7 @@ export class PostService {
 
       return {
         message: 'Post has been updated successfully!',
-        status: true,
+        success: true,
         data: updatedPost,
       };
     } catch (error) {
@@ -268,7 +268,7 @@ export class PostService {
 
   async deletePost(id: ParamsDto['id']): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: null;
   }> {
     try {
@@ -306,7 +306,7 @@ export class PostService {
 
       return {
         message: 'Post has been deleted successfully!',
-        status: true,
+        success: true,
         data: null,
       };
     } catch (error) {

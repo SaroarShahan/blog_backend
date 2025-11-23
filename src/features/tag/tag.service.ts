@@ -21,7 +21,7 @@ export class TagService {
 
   async createTag(createTagDto: CreateTagDto): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: TagDocument;
   }> {
     try {
@@ -38,7 +38,7 @@ export class TagService {
 
       return {
         message: 'Tag has been created successfully!',
-        status: true,
+        success: true,
         data: tag,
       };
     } catch (error) {
@@ -58,7 +58,7 @@ export class TagService {
 
   async getAllTags(): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: TagDocument[];
   }> {
     try {
@@ -66,7 +66,7 @@ export class TagService {
 
       return {
         message: 'Tags have been fetched successfully!',
-        status: true,
+        success: true,
         data: tags,
       };
     } catch (error) {
@@ -78,7 +78,7 @@ export class TagService {
 
   async getTag(id: ParamsDto['id']): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: TagDocument;
   }> {
     try {
@@ -92,7 +92,7 @@ export class TagService {
 
       return {
         message: 'Tag has been fetched successfully!',
-        status: true,
+        success: true,
         data: tag,
       };
     } catch (error) {
@@ -110,7 +110,7 @@ export class TagService {
     updateTagDto: UpdateTagDto,
   ): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: TagDocument;
   }> {
     try {
@@ -124,7 +124,7 @@ export class TagService {
 
       return {
         message: 'Tag has been updated successfully!',
-        status: true,
+        success: true,
         data: tag,
       };
     } catch (error) {
@@ -147,7 +147,7 @@ export class TagService {
 
   async getPostsByTag(id: ParamsDto['id']): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: PostDocument[];
   }> {
     try {
@@ -172,7 +172,7 @@ export class TagService {
 
       return {
         message: 'Posts have been fetched successfully!',
-        status: true,
+        success: true,
         data: posts,
       };
     } catch (error) {
@@ -187,7 +187,7 @@ export class TagService {
 
   async deleteTag(id: ParamsDto['id']): Promise<{
     message: string;
-    status: boolean;
+    success: boolean;
     data: null;
   }> {
     try {
@@ -203,7 +203,7 @@ export class TagService {
 
       return {
         message: 'Tag has been deleted successfully!',
-        status: true,
+        success: true,
         data: null,
       };
     } catch (error) {
