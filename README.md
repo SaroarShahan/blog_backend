@@ -127,10 +127,6 @@ yarn start:prod
 - `yarn build` - Build the application
 - `yarn format` - Format code with Prettier
 - `yarn lint` - Lint and fix code
-- `yarn test` - Run unit tests
-- `yarn test:watch` - Run tests in watch mode
-- `yarn test:cov` - Run tests with coverage
-- `yarn test:e2e` - Run end-to-end tests
 
 ## API Endpoints
 
