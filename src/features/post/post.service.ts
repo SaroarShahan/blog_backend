@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Model, FilterQuery } from 'mongoose';
 
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -105,15 +105,50 @@ export class PostService {
     data: PostDocument[];
   }> {
     try {
-      console.log('Pagination params received:', params);
+      // Builder Query
+      // 1.1 filtering
+      const queryObj = { ...params };
+      const excludedFields = ['page', 'limit', 'sort', 'fields'];
+      excludedFields.forEach((el) => delete queryObj[el]);
 
-      const posts = await this.postModel
-        .find()
+      // 1.2 Advanced filtering
+      let queryStr = JSON.stringify(queryObj);
+      queryStr = queryStr.replace(
+        /\b(gte|gt|lte|lt)\b/g,
+        (match) => `$${match}`,
+      );
+
+      const filter = JSON.parse(queryStr) as FilterQuery<Post>;
+      let blogQuery = this.postModel.find(filter);
+
+      // 2. Sorting
+      if (params['sort'] && typeof params['sort'] === 'string') {
+        const sortBy = params['sort'].split(',').join(' ');
+        blogQuery = blogQuery.sort(sortBy);
+      } else {
+        blogQuery = blogQuery.sort('-createdAt');
+      }
+
+      // 3. Field limiting
+      if (params['fields'] && typeof params['fields'] === 'string') {
+        const fields = params['fields'].split(',').join(' ');
+        blogQuery = blogQuery.select(fields);
+      } else {
+        blogQuery = blogQuery.select('-__v');
+      }
+
+      // 4. Pagination
+      const page = params.page * 1 || 1;
+      const limit = params.limit * 1 || 10;
+      const skip = (page - 1) * limit;
+
+      blogQuery = blogQuery.skip(skip).limit(limit);
+
+      const posts = await blogQuery
         .populate('user', 'firstName lastName username email')
         .populate('category', 'name description')
         .populate('tags', 'name description')
-        .populate('comments', 'content user createdAt')
-        .sort({ createdAt: -1 });
+        .populate('comments', 'content user createdAt');
 
       return {
         message: 'Posts have been fetched successfully!',
