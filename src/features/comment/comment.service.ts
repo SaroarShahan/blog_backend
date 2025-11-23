@@ -11,6 +11,7 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { Comment, CommentDocument } from './schema/comment.schema';
 import { Post } from '../post/schema/post.schema';
 import { User } from '../../core/user/schema/user.schema';
+import { MongoidDto } from 'src/common/dto/mongoid.dto';
 
 @Injectable()
 export class CommentService {
@@ -146,7 +147,7 @@ export class CommentService {
     }
   }
 
-  async getCommentsByPost(postId: Types.ObjectId): Promise<{
+  async getCommentsByPost(postId: MongoidDto['id']): Promise<{
     message: string;
     success: boolean;
     data: CommentDocument[];

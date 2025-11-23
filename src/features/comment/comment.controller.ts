@@ -18,6 +18,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { AuthGuard } from 'src/core/auth/auth.guard';
 import { ApiBearerAuth, ApiParam, ApiTags, ApiQuery } from '@nestjs/swagger';
+import { MongoidDto } from 'src/common/dto/mongoid.dto';
 
 interface AuthenticatedRequest extends Request {
   user: { id: string };
@@ -41,11 +42,9 @@ export class CommentController {
 
   @Get()
   @ApiQuery({ name: 'postId', required: false, type: String })
-  getAllComments(@Query('postId') postId?: string) {
+  getAllComments(@Query('postId') postId?: MongoidDto['id']) {
     if (postId) {
-      return this.commentService.getCommentsByPost(
-        new Types.ObjectId(postId),
-      );
+      return this.commentService.getCommentsByPost(postId);
     }
     return this.commentService.getAllComments();
   }
@@ -75,4 +74,3 @@ export class CommentController {
     return this.commentService.deleteComment(id);
   }
 }
-

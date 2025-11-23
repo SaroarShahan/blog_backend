@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import type { Request } from 'express';
 
@@ -16,8 +17,9 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { AuthGuard } from 'src/core/auth/auth.guard';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
-import { ParamsDto } from 'src/common/dto/params.dto';
+import { MongoidDto } from 'src/common/dto/mongoid.dto';
 import { CommentService } from '../comment/comment.service';
+import { ParamsDto } from 'src/common/dto/params.dto';
 
 interface AuthenticatedRequest extends Request {
   user: { id: string };
@@ -43,13 +45,13 @@ export class PostController {
   }
 
   @Get()
-  getAllPosts() {
-    return this.postService.getAllPosts();
+  getAllPosts(@Query() params: ParamsDto) {
+    return this.postService.getAllPosts(params);
   }
 
   @ApiParam({ name: 'id', type: String, description: 'Post ID' })
   @Get(':id/comments')
-  getCommentsByPost(@Param('id') id: ParamsDto['id']): Promise<{
+  getCommentsByPost(@Param('id') id: MongoidDto['id']): Promise<{
     message: string;
     success: boolean;
     data: any[];
@@ -61,7 +63,7 @@ export class PostController {
   @ApiBearerAuth('JWT-auth')
   @ApiParam({ name: 'id', type: String, description: 'Post ID' })
   @Get(':id')
-  getPost(@Param('id') id: ParamsDto['id']) {
+  getPost(@Param('id') id: MongoidDto['id']) {
     return this.postService.getPost(id);
   }
 
@@ -70,7 +72,7 @@ export class PostController {
   @ApiParam({ name: 'id', type: String, description: 'Post ID' })
   @Patch(':id/update')
   updatePost(
-    @Param('id') id: ParamsDto['id'],
+    @Param('id') id: MongoidDto['id'],
     @Body() updatePostDto: UpdatePostDto,
   ) {
     return this.postService.updatePost(id, updatePostDto);
@@ -80,7 +82,7 @@ export class PostController {
   @ApiBearerAuth('JWT-auth')
   @ApiParam({ name: 'id', type: String, description: 'Post ID' })
   @Delete(':id/delete')
-  deletePost(@Param('id') id: ParamsDto['id']) {
+  deletePost(@Param('id') id: MongoidDto['id']) {
     return this.postService.deletePost(id);
   }
 }

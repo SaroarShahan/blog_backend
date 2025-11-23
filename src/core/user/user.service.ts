@@ -11,7 +11,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schema/user.schema';
 import { UserDto } from 'src/common/dto/user.dto';
 import { Post, PostDocument } from '../../features/post/schema/post.schema';
-import { ParamsDto } from 'src/common/dto/params.dto';
+import { MongoidDto } from 'src/common/dto/mongoid.dto';
 
 @Injectable()
 export class UserService {
@@ -60,7 +60,7 @@ export class UserService {
     return await bcrypt.compare(password, hashedPassword);
   }
 
-  async saveRefreshToken(id: ParamsDto['id'], token: string): Promise<void> {
+  async saveRefreshToken(id: MongoidDto['id'], token: string): Promise<void> {
     const user = await this.userModel.findById(id);
 
     if (!user) {
@@ -135,7 +135,7 @@ export class UserService {
     }
   }
 
-  async getUser(id: ParamsDto['id']): Promise<{
+  async getUser(id: MongoidDto['id']): Promise<{
     message: string;
     success: boolean;
     data: UserDocument | null;
@@ -156,7 +156,7 @@ export class UserService {
   }
 
   async updateUser(
-    id: ParamsDto['id'],
+    id: MongoidDto['id'],
     updateUserDto: UpdateUserDto,
   ): Promise<{
     message: string;
@@ -184,7 +184,7 @@ export class UserService {
     }
   }
 
-  async getPostsByUser(id: ParamsDto['id']): Promise<{
+  async getPostsByUser(id: MongoidDto['id']): Promise<{
     message: string;
     success: boolean;
     data: PostDocument[];
@@ -225,7 +225,7 @@ export class UserService {
     }
   }
 
-  async deleteUser(id: ParamsDto['id']): Promise<{
+  async deleteUser(id: MongoidDto['id']): Promise<{
     message: string;
     success: boolean;
     data: null;

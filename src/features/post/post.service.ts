@@ -12,6 +12,7 @@ import { Post, PostDocument } from './schema/post.schema';
 import { User } from '../../core/user/schema/user.schema';
 import { Category } from '../category/schema/category.schema';
 import { Tag } from '../tag/schema/tag.schema';
+import { MongoidDto } from 'src/common/dto/mongoid.dto';
 import { ParamsDto } from 'src/common/dto/params.dto';
 
 @Injectable()
@@ -98,12 +99,14 @@ export class PostService {
     }
   }
 
-  async getAllPosts(): Promise<{
+  async getAllPosts(params: ParamsDto): Promise<{
     message: string;
     success: boolean;
     data: PostDocument[];
   }> {
     try {
+      console.log('Pagination params received:', params);
+
       const posts = await this.postModel
         .find()
         .populate('user', 'firstName lastName username email')
@@ -124,7 +127,7 @@ export class PostService {
     }
   }
 
-  async getPost(id: ParamsDto['id']): Promise<{
+  async getPost(id: MongoidDto['id']): Promise<{
     message: string;
     success: boolean;
     data: PostDocument;
@@ -163,7 +166,7 @@ export class PostService {
   }
 
   async updatePost(
-    id: ParamsDto['id'],
+    id: MongoidDto['id'],
     updatePostDto: UpdatePostDto,
   ): Promise<{
     message: string;
@@ -266,7 +269,7 @@ export class PostService {
     }
   }
 
-  async deletePost(id: ParamsDto['id']): Promise<{
+  async deletePost(id: MongoidDto['id']): Promise<{
     message: string;
     success: boolean;
     data: null;

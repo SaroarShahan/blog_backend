@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Types } from 'mongoose';
 
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { UserDto } from 'src/common/dto/user.dto';
 import { UserService } from '../user/user.service';
 import { User } from '../user/schema/user.schema';
+import { MongoidDto } from 'src/common/dto/mongoid.dto';
 
 @Injectable()
 export class AuthService {
@@ -115,11 +115,12 @@ export class AuthService {
 
   async generateRefreshToken(refreshToken: string) {
     try {
-      const decoded: {
-        id: Types.ObjectId;
-      } = await this.jwtService.verifyAsync(refreshToken, {
-        secret: this.configService.get<string>('HASH_SECRET'),
-      });
+      const decoded: MongoidDto = await this.jwtService.verifyAsync(
+        refreshToken,
+        {
+          secret: this.configService.get<string>('HASH_SECRET'),
+        },
+      );
 
       if (!decoded) {
         throw new BadRequestException('Invalid refresh token');

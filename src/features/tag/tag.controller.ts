@@ -14,7 +14,7 @@ import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { AuthGuard } from 'src/core/auth/auth.guard';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
-import { ParamsDto } from 'src/common/dto/params.dto';
+import { MongoidDto } from 'src/common/dto/mongoid.dto';
 
 @ApiTags('Tags')
 @Controller('tags')
@@ -35,13 +35,13 @@ export class TagController {
 
   @ApiParam({ name: 'id', type: String, description: 'Tag ID' })
   @Get(':id/posts')
-  getPostsByTag(@Param('id') id: ParamsDto['id']) {
+  getPostsByTag(@Param('id') id: MongoidDto['id']) {
     return this.tagService.getPostsByTag(id);
   }
 
   @ApiParam({ name: 'id', type: String, description: 'Tag ID' })
   @Get(':id')
-  getTag(@Param('id') id: ParamsDto['id']) {
+  getTag(@Param('id') id: MongoidDto['id']) {
     return this.tagService.getTag(id);
   }
 
@@ -50,7 +50,7 @@ export class TagController {
   @ApiParam({ name: 'id', type: String, description: 'Tag ID' })
   @Patch(':id/update')
   updateTag(
-    @Param('id') id: ParamsDto['id'],
+    @Param('id') id: MongoidDto['id'],
     @Body() updateTagDto: UpdateTagDto,
   ) {
     return this.tagService.updateTag(id, updateTagDto);
@@ -60,7 +60,7 @@ export class TagController {
   @ApiBearerAuth('JWT-auth')
   @ApiParam({ name: 'id', type: String, description: 'Tag ID' })
   @Delete(':id/delete')
-  deleteTag(@Param('id') id: ParamsDto['id']) {
+  deleteTag(@Param('id') id: MongoidDto['id']) {
     return this.tagService.deleteTag(id);
   }
 }

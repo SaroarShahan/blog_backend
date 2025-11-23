@@ -10,7 +10,7 @@ import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { Tag, TagDocument } from './schema/tag.schema';
 import { Post, PostDocument } from '../post/schema/post.schema';
-import { ParamsDto } from 'src/common/dto/params.dto';
+import { MongoidDto } from 'src/common/dto/mongoid.dto';
 
 @Injectable()
 export class TagService {
@@ -76,7 +76,7 @@ export class TagService {
     }
   }
 
-  async getTag(id: ParamsDto['id']): Promise<{
+  async getTag(id: MongoidDto['id']): Promise<{
     message: string;
     success: boolean;
     data: TagDocument;
@@ -106,7 +106,7 @@ export class TagService {
   }
 
   async updateTag(
-    id: ParamsDto['id'],
+    id: MongoidDto['id'],
     updateTagDto: UpdateTagDto,
   ): Promise<{
     message: string;
@@ -145,7 +145,7 @@ export class TagService {
     }
   }
 
-  async getPostsByTag(id: ParamsDto['id']): Promise<{
+  async getPostsByTag(id: MongoidDto['id']): Promise<{
     message: string;
     success: boolean;
     data: PostDocument[];
@@ -185,7 +185,7 @@ export class TagService {
     }
   }
 
-  async deleteTag(id: ParamsDto['id']): Promise<{
+  async deleteTag(id: MongoidDto['id']): Promise<{
     message: string;
     success: boolean;
     data: null;
